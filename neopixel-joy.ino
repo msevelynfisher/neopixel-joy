@@ -139,6 +139,6 @@ void loop() {
   
   }
 
-  // increase 8-bit timer once per "frame"
-  t += 4;
+  // increase 8-bit timer per "frame"
+  t = (t + 4) % 256;
 }
