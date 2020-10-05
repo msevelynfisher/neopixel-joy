@@ -10,11 +10,12 @@
 #define PIN_NEO 6
 
 // mode enum
-#define N_MODES 4
+#define N_MODES 5
 #define MODE_OFF 0
 #define MODE_WHITE 1
 #define MODE_COLOR 2
 #define MODE_RAINBOW 3
+#define MODE_PRIDE 4
 
 bool mode_switch_state = false;
 byte mode = MODE_OFF;
@@ -108,6 +109,12 @@ void loop() {
       } else if (mode == MODE_RAINBOW) {
         int rgb[3];
         hue2rgb(hue + t, rgb);
+        buf[i][0] = rgb[0];
+        buf[i][1] = rgb[1];
+        buf[i][2] = rgb[2];
+      } else if (mode == MODE_PRIDE) {
+        int rgb[3];
+        hue2rgb(hue + t + 256 * i / NPIX, rgb);
         buf[i][0] = rgb[0];
         buf[i][1] = rgb[1];
         buf[i][2] = rgb[2];
