@@ -21,7 +21,7 @@ bool mode_switch_state = false;
 byte mode = MODE_OFF;
 
 unsigned int t;
-Adafruit_NeoPixel pixels (NPIX, PIN_NEO, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(NPIX, PIN_NEO, NEO_GRB + NEO_KHZ800);
 
 uint32_t buf[NPIX];
 int hue = 0;
@@ -32,8 +32,6 @@ int cal_x;
 int cal_y;
 
 void setup() {
-  Serial.begin(9600);
-
   // joystick pins
   pinMode(PIN_MODE, INPUT_PULLUP);
   pinMode(PIN_VRX, INPUT);
@@ -48,7 +46,6 @@ void setup() {
 }
 
 void loop() {
-
   // update hue and brightness based on joystick position
   
   int vrx = (analogRead(PIN_VRX) - cal_x) / 16;
@@ -73,19 +70,24 @@ void loop() {
   
   unsigned long m = millis();
   while (millis() - m < 20) {
-
     // set pixel buffer values based on mode
     for (unsigned int i = 0; i < NPIX; ++i) {
-      if (mode == MODE_OFF) {
-        buf[i] = 0x00000000;
-      } else if (mode == MODE_WHITE) {
-        buf[i] = 0x00FFFFFF;
-      } else if (mode == MODE_COLOR) {
-        buf[i] = pixels.ColorHSV(256 * hue);
-      } else if (mode == MODE_RAINBOW) {
-        buf[i] = pixels.ColorHSV(256 * (hue + t));
-      } else if (mode == MODE_PRIDE) {
-        buf[i] = pixels.ColorHSV(256 * (hue + t + 256 * i / NPIX));
+      switch (mode) {
+        case MODE_OFF:
+          buf[i] = 0x00000000;
+          break;
+        case MODE_WHITE:
+          buf[i] = 0x00FFFFFF;
+          break;
+        case MODE_COLOR:
+          buf[i] = pixels.ColorHSV(256 * hue);
+          break;
+        case MODE_RAINBOW:
+          buf[i] = pixels.ColorHSV(256 * (hue + t));
+          break;
+        case MODE_PRIDE:
+          buf[i] = pixels.ColorHSV(256 * (hue + t + 256 * i / NPIX));
+          break;
       }
     }
     
@@ -104,7 +106,6 @@ void loop() {
     } else if(digitalRead(PIN_MODE) && mode_switch_state) {
       mode_switch_state = false;
     }
-  
   }
 
   // increase 8-bit timer per "frame"
