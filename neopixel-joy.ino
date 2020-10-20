@@ -23,29 +23,13 @@ byte mode = MODE_OFF;
 unsigned int t;
 Adafruit_NeoPixel pixels (NPIX, PIN_NEO, NEO_GRB + NEO_KHZ800);
 
-byte buf[NPIX][3];
+uint32_t buf[NPIX];
 int hue = 0;
 int brightness = 4;
 
 // joystick calibration
 int cal_x;
 int cal_y;
-
-// convert a hue value (0 .. 255) to rgb
-// brightness and saturation are not held constant
-void hue2rgb(int hue, int* rgb) {
-  hue += 256;
-  hue %= 256;
-
-  rgb[0] = hue;
-  rgb[1] = (hue + 85) % 256;
-  rgb[2] = (hue + 170) % 256;
-
-  for (int i = 0; i < 3; i++) {
-    rgb[i] -= 128;
-    rgb[i] = rgb[i] * rgb[i] / 128;
-  }
-}
 
 void setup() {
   Serial.begin(9600);
@@ -93,47 +77,24 @@ void loop() {
     // set pixel buffer values based on mode
     for (unsigned int i = 0; i < NPIX; ++i) {
       if (mode == MODE_OFF) {
-        buf[i][0] = 0;
-        buf[i][1] = 0;
-        buf[i][2] = 0;
+        buf[i] = 0x00000000;
       } else if (mode == MODE_WHITE) {
-        buf[i][0] = 255;
-        buf[i][1] = 255;
-        buf[i][2] = 255;
+        buf[i] = 0x00FFFFFF;
       } else if (mode == MODE_COLOR) {
-        int rgb[3];
-        hue2rgb(hue, rgb);
-        buf[i][0] = rgb[0];
-        buf[i][1] = rgb[1];
-        buf[i][2] = rgb[2];
+        buf[i] = pixels.ColorHSV(256 * hue);
       } else if (mode == MODE_RAINBOW) {
-        int rgb[3];
-        hue2rgb(hue + t, rgb);
-        buf[i][0] = rgb[0];
-        buf[i][1] = rgb[1];
-        buf[i][2] = rgb[2];
+        buf[i] = pixels.ColorHSV(256 * (hue + t));
       } else if (mode == MODE_PRIDE) {
-        int rgb[3];
-        hue2rgb(hue + t + 256 * i / NPIX, rgb);
-        buf[i][0] = rgb[0];
-        buf[i][1] = rgb[1];
-        buf[i][2] = rgb[2];
+        buf[i] = pixels.ColorHSV(256 * (hue + t + 256 * i / NPIX));
       }
     }
     
     // update pixels
     pixels.clear();
     for (unsigned int i = 0; i < NPIX; ++i) {
-      int r = buf[i][0] * brightness / 256;
-      int g = buf[i][1] * brightness / 256;
-      int b = buf[i][2] * brightness / 256;
-      pixels.setPixelColor(
-        i,
-        (byte) r,
-        (byte) g,
-        (byte) b
-      );
+      pixels.setPixelColor(i, buf[i]);
     }
+    pixels.setBrightness(brightness);
     pixels.show();
 
     // change mode
